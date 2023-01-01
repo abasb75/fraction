@@ -1,6 +1,6 @@
 {
   "name": "@abasb75/fraction",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "formula computer",
   "main": "index.js",
   "scripts": {
