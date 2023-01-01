@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>اضافه کردن کتابخانه جاوااسکریپت به npm</h1>
+    <p>در این پست یک پکیج جاوااسکریپت می سازیم و آنرا به npm اضافه میکنیم.</p>
+    <p>برای شروع ابتدا یک فولدر به نام fraction ایجاد میکنیم. </p>
+
+    <textarea class="code" disabled >
+mkdir fraction
+cd fraction
+    </textarea>
+
+    <p>با دستور زیر این پروژه را یک پروژه npm تعریف میکنیم.</p>
+
+    <textarea class="code" disabled >
+npm init -y # or use npm init
+    </textarea>
+
+    <p>درون پوشه fraction یک فایل بنام package.json به وجود آمده است. که محتویات آنرا به صورت زیر تغییر میدهیم.</p>
+
+    <p></p>
+
+    <textarea class="code" disabled >
+{
+    "name": "@abasb75/fraction",
+    "version": "0.0.1",
+    "description": "fraction with equation-parse",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+      "react fraction" ,
+         "fraction",
+      "fractions",
+      "math",
+      ""
+       ],
+    "author": "Abbas Bagheri <abasbagheria@gmail.com>",
+    "license": "ISC"
+}
+          
+    </textarea>
+
+    <p></p>
+    <p>name نام کتابخانه مورد نظر ماست که من @abasb75/fraction در نظر گرفتم. دقت کنید این نام باید یکتا باشد و قبلا کسی آنرا در npm ثبت نکرده باشد.</p>
+    <p>version نسخه کتابخانه را مشخص میکند. من برای شروع 0.0.1 در نظر گرفتم.</p>
+    <p>description یک توضیح کوتاه یک جمله در مورد کتابخانه است.</p>
+    <p>main آدرس اصلی فایل شروع برنامه است.</p>
+    <p>keywork کلمات کلیدی کتابخانه که برای بهبود نمایش کتابخانه در جستجو میتوا از آن کمک گرفت</p>
+    <p>author هم نام سازنده کتابخانه است.</p>
+
+    <p>پس از ایجاد پروژه npm ابتدا کتابخانه های مورد استفاده را به پروژه خود اضافه میکنیم.</p>
+    <p>ما قصد داریم در این پروژه از کتابخانه <a href="https://github.com/kgram/equation-parser">equation-parser</a> استفاده کنیم.</p>
+    
+    <p></p>
+    <textarea class="code" disabled >
+npm install -S equation-parser
+npm install typescript --save-dev
+npm install @types/node --save-dev
+    </textarea>
+    <p></p>
+    <p>اکنون باید لیست کتابخانه های مورد استفاده به فایل package.json اضافه شده باشد.</p>
+    <p>یک پوشه بنام src می سازیم. </p>
+
+    <p></p>
+    <textarea class="code" disabled >
+mkdir src
+    </textarea>
+    <p></p>
+
+    <p>در این پوشه فایلهای زیر را اضافه میکنیم.</p>
+
+    <p></p>
+    <textarea class="code" disabled >
+fraction/
+-- package.json
+-- package-lock.json
+-- src/
+-- -- index.ts
+-- -- src/
+-- -- -- parse.ts
+-- -- -- renderTree.ts
+-- -- -- compute.ts
+-- -- -- parsedFraction.ts
+    </textarea>
+    <p></p>
+
+    <p>دقت کنید من یک پوشه بنام پوشه src در کنار فایل index.ts ایجاد کردم و هر دو را درون فولدر src که از قبل ایجاد کرده بودم قرار دادم.</p>
+
+    
+
+    <p>فایل parsedFraction.ts : </p>
+
+    <p></p>
+    <textarea class="code" disabled >
+import {EquationNode, EquationParserError} from 'equation-parser';  
+
+export type ParsedFraction =  EquationNode | EquationParserError;
+    </textarea>
+    <p></p>
+
+    <p>فایل parse.ts :</p>
+    <p></p>
+    <textarea class="code" disabled >
+import {parse} from 'equation-parser';
+import {ParsedFraction} from './parsedFraction';
+
+export default function (term:string,error?:Function):ParsedFraction{
+    const parsedFraction:ParsedFraction = parse(term);
+    if(parsedFraction.type=="parser-error" && error){
+        error();
+    }
+    return parsedFraction;
+}
+    </textarea>
+    <p></p>
+
+    
+    <p>فایل renderTree.ts :</p>
+    <p></p>
+    <textarea class="code" disabled >
+import {parse,renderTree} from 'equation-parser';
+import {ParsedFraction} from './parsedFraction';
+
+export default function (term:string,error?:Function){
+    const parsedFraction:ParsedFraction = parse(term);
+    if(parsedFraction.type=="parser-error" && error){
+        error();
+    }
+    return renderTree(parsedFraction);
+}
+    </textarea>
+    <p></p>
+
+    <p>فایل compute.ts :</p>
+    <p></p>
+    <textarea class="code" disabled >
+import parse from './parse';
+import {ParsedFraction} from './parsedFraction';
+
+export default function (term:string,error?:Function):number{
+    const parsedFraction:ParsedFraction = parse(term,error);
+    if(parsedFraction.type !== "parser-error"){
+        return result(parsedFraction,error ? error : ()=>{} );
+    }else{
+        return 0;
+    }
+}
+        
+function result(parsedFractions:ParsedFraction,error:Function):number{
+    if(parsedFractions.type == "number"){
+        return parseInt(parsedFractions.value);
+    }else if(parsedFractions.type === "multiply-dot"){
+        return result(parsedFractions.a,error) * result(parsedFractions.b,error);
+    }else if(parsedFractions.type === "divide-fraction"){
+        return result(parsedFractions.a,error) / result(parsedFractions.b,error);
+    }else if(parsedFractions.type === "plus"){
+        return result(parsedFractions.a,error) + result(parsedFractions.b,error);
+    }else if(parsedFractions.type === "minus"){
+        return result(parsedFractions.a,error) - result(parsedFractions.b,error);
+    }else if(parsedFractions.type === "block"){
+        return result(parsedFractions.child,error);
+    }else{
+        error();
+        return 0;
+    }
+}
+    </textarea>
+    <p></p>
+
+    <p>فایل index.ts :</p>
+    <p></p>
+    <textarea class="code" disabled >
+import compute from "./src/compute";
+import renderTree from "./src/renderTree";
+import parse from "./src/parse";
+        
+export {compute,renderTree,parse} ;
+    </textarea>
+    <p></p>
+
+    <p>اگر در فولدر fraction فایل tsconfig.json وجود نداشت آنرا بوجود می آوریم و اگر هم موجود بود محتوای آنرا به زیر تغییر میدهیم.</p>
+    
+
+    <p>فایل tsconfig.json :</p>
+    <p></p>
+    <textarea class="code" disabled >
+{
+    "compilerOptions": {
+      "strict": true,
+      "declaration": true,
+      "esModuleInterop": true,
+      "outDir": "dist",
+      "target": "es6",
+      "module": "es6",
+      "moduleResolution": "node",
+    },
+    "include": ["src"]
+}
+    </textarea>
+    <p></p>
+
+    <p>باید کدهای typescript خود را کامپایل کرده و خروجی جاوااسکریپت بگیریم. برای این کار دستور زیر را در ترمینال وارد میکنیم.</p>
+    <p></p>
+    <textarea class="code" disabled >
+tsc
+    </textarea>
+    <p></p>
+    <p>بعد از پایان کامپایل یک فولدر جدید به نام dist به پروژه ما اضافه شد.</p>
+    <p>مسیر dist را در فایل tsconfig.json مشخص کرده بودیم.</p>
+    <p></p>
+    <textarea class="code" disabled >
+"outDir": "dist",
+    </textarea>
+    <p></p>
+    <p>فایل README.md یا راهنما را برای کتابخانه خود بسازید و به پروژه اضافه کنید.</p>
+    <p>اکنون پروژه خود را به گیتهاب اضافه کنید و آدرس آنرا به فایل package.json اضافه کنید.</p>
+    <p></p>
+    <textarea class="code" disabled >
+"repository": {
+    "type": "git",
+    "url": "git+https://github.com/abasb75/fraction.git"
+},
+"bugs": {
+    "url": "https://github.com/abasb75/fraction/issues"
+},
+"homepage": "https://github.com/abasb75/fraction#readme",
+    </textarea>
+    <p></p>
+
+    <p>فایلهای README.md و package.json را در فولدر dist کپی کنید</p>
+
+    <p>البته میتوان فرایند کامپایل و کپی فایلها را به صورت دستور به nodejs معرفی کرد. برای اینکار در مکینتاش و لینوکس کدهای زیر را به فایل package.json اضافه میکنیم:</p>
+    <p></p>
+    <textarea class="code" disabled >
+"scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc && cp package.json README.md ./dist" 
+} 
+    </textarea>
+    <p></p>
+
+    <p>فایل package.json ما در نهایت به این تبدیل شد : </p>
+    <p></p>
+    <textarea class="code" disabled >
+{
+    "name": "@abasb75/fraction",
+    "version": "0.0.1",
+    "description": "formula computer",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+      "react fraction",
+      "fraction",
+      "fractions",
+      "math",
+      "compute",
+      ""
+    ],
+  "author": "Abbas Bagheri <abasbagheria@gmail.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abasb75/fraction.git"
+  },
+  "dependencies": {
+    "equation-parser": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.26",
+    "typescript": "^4.9.4"
+  }
+}       
+    </textarea>
+
+
+
+    <p>فایلهایی که تا الآن داریم:</p>
+    <p></p>
+    <textarea class="code" disabled >
+fraction/
+-- package.json
+-- package-lock.json
+-- .gitignore
+-- src/
+-- -- index.ts
+-- -- src/
+-- -- -- parse.ts
+-- -- -- renderTree.ts
+-- -- -- compute.ts
+-- -- -- parsedFraction.ts
+-- dist/
+-- -- index.js
+-- -- index.d.ts
+-- -- package.json
+-- -- README.md
+-- -- src/
+-- -- -- parse.js
+-- -- -- renderTree.js
+-- -- -- compute.js
+-- -- -- parsedFraction.js
+-- -- -- parse.d.ts
+-- -- -- renderTree.d.ts
+-- -- -- compute.d.ts
+-- -- -- parsedFraction.d.ts
+-- node_modules/
+-- -- *
+    </textarea>
+    <p></p>
+
+    <p>فایل git .ignore را میسازیم و مواردی که نمیخواهیم در گیت آپلود شود به آن اضافه میکنیم:</p>
+    <p></p>
+    <textarea class="code" disabled >
+node_modules
+    </textarea>
+    <p></p>
+
+    
+</body>
+</html>
