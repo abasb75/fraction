@@ -12,7 +12,7 @@ npm install @abasb75/fraction --save
 
 ```javascript
 
-import {compute , parse , renderTree} from './src';
+import {compute , parse , renderTree} from '@abasb75/fraction';
 
 const computeTest = compute('2+4');
 console.log(computeTest);
